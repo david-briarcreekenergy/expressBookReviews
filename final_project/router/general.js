@@ -15,6 +15,7 @@ public_users.post('/register', (req, res) => {
   }
 
   users.push({ username: username, password: password });
+  console.log(users);
 
   return res.status(200).json({ message: 'User successfully registered' });
 });
@@ -43,7 +44,6 @@ public_users.get('/isbn/:isbn', function (req, res) {
   }
 
   return res.status(200).json({ book }, null, 4);
-  // return res.status(200).send(JSON.stringify({ book }, null, 4));
 });
 
 // Get book details based on author
@@ -92,8 +92,24 @@ public_users.get('/title/:title', function (req, res) {
 
 //  Get book review
 public_users.get('/review/:isbn', function (req, res) {
-  //Write your code here
-  return res.status(300).json({ message: 'Yet to be implemented' });
+  const isbn = req.params.isbn;
+
+  if (!isbn) {
+    return res.status(400).json({
+      message:
+        'You can only retrieve a book review by including its ISBN number',
+    });
+  }
+
+  const book = books[isbn];
+
+  if (!book) {
+    return res
+      .status(404)
+      .json({ message: `No book by ISBN ${isbn} could be found` });
+  }
+
+  return res.status(200).json(book.reviews, null, 4);
 });
 
 module.exports.general = public_users;

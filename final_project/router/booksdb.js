@@ -15,7 +15,7 @@ let books = {
   10: {
     author: 'Samuel Beckett',
     title: 'Molloy, Malone Dies, The Unnamable, the trilogy',
-    reviews: { 1: 'an example of a review' },
+    reviews: { daveward: 'an example of a review' },
   },
 };
 

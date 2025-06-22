@@ -8,14 +8,13 @@ public_users.post('/register', (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
 
-  if (!username && !password) {
+  if (!username || !password) {
     return res.status(400).json({
       message: 'You must provide a username and password to register',
     });
   }
 
   users.push({ username: username, password: password });
-  console.log(users);
 
   return res.status(200).json({ message: 'User successfully registered' });
 });

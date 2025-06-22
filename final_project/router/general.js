@@ -4,6 +4,17 @@ let isValid = require('./auth_users.js').isValid;
 let users = require('./auth_users.js').users;
 const public_users = express.Router();
 
+const fetchBooks = async () => {
+  return await new Promise((resolve, reject) => {
+    try {
+      const booksData = require('./booksdb.js');
+      resolve(booksData);
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
 public_users.post('/register', (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
@@ -22,15 +33,9 @@ public_users.post('/register', (req, res) => {
 // Get the book list available in the shop
 public_users.get('/', async function (req, res) {
   // return res.status(200).send('OK');
+
   try {
-    const books = await new Promise((resolve, reject) => {
-      try {
-        const booksData = require('./booksdb.js');
-        resolve(booksData);
-      } catch (err) {
-        reject(err);
-      }
-    });
+    const books = await fetchBooks();
     return res.status(200).json({ books });
   } catch (error) {
     return res
@@ -50,14 +55,7 @@ public_users.get('/isbn/:isbn', async function (req, res) {
   }
 
   try {
-    const books = await new Promise((resolve, reject) => {
-      try {
-        const booksData = require('./booksdb.js');
-        resolve(booksData);
-      } catch (err) {
-        reject(err);
-      }
-    });
+    const books = await fetchBooks();
 
     const book = books[isbn];
 
@@ -85,14 +83,7 @@ public_users.get('/author/:author', async function (req, res) {
   }
 
   try {
-    const books = await new Promise((resolve, reject) => {
-      try {
-        const booksData = require('./booksdb.js');
-        resolve(booksData);
-      } catch (err) {
-        reject(err);
-      }
-    });
+    const books = await fetchBooks();
 
     const booksByAuthor = Object.values(books).filter(
       book => book.author.toLowerCase() === author.toLowerCase(),
@@ -122,14 +113,7 @@ public_users.get('/title/:title', async function (req, res) {
   }
 
   try {
-    const books = await new Promise((resolve, reject) => {
-      try {
-        const booksData = require('./booksdb.js');
-        resolve(booksData);
-      } catch (err) {
-        reject(err);
-      }
-    });
+    const books = await fetchBooks();
 
     const booksByTitle = Object.values(books).filter(
       book => book.title.toLowerCase() === title.toLowerCase(),
@@ -150,7 +134,7 @@ public_users.get('/title/:title', async function (req, res) {
 });
 
 //  Get book review
-public_users.get('/review/:isbn', function (req, res) {
+public_users.get('/review/:isbn', async function (req, res) {
   const isbn = req.params.isbn;
 
   if (!isbn) {
@@ -160,15 +144,22 @@ public_users.get('/review/:isbn', function (req, res) {
     });
   }
 
-  const book = books[isbn];
+  try {
+    const books = await fetchBooks();
+    const book = books[isbn];
 
-  if (!book) {
+    if (!book) {
+      return res
+        .status(404)
+        .json({ message: `No book by ISBN ${isbn} could be found` });
+    }
+
+    return res.status(200).json(book.reviews);
+  } catch (error) {
     return res
-      .status(404)
-      .json({ message: `No book by ISBN ${isbn} could be found` });
+      .status(500)
+      .json({ message: `Error deleting book review`, error: error });
   }
-
-  return res.status(200).json(book.reviews, null, 4);
 });
 
 module.exports.general = public_users;
